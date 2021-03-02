@@ -1,0 +1,26 @@
+{
+  "name": "yent-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YEN-Africa/yent-server.git"
+  },
+  "author": "Yen Africa",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/YEN-Africa/yent-server/issues"
+  },
+  "homepage": "https://github.com/YEN-Africa/yent-server#readme",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
+}
