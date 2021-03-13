@@ -10,10 +10,11 @@ const mongoose =require('mongoose');
 const cors = require('cors')
 
 const userRoutes = require('./routes/user');
+require('dotenv').config();
 
 mongoose.Promise = require('bluebird')
 
-mongoose.connect("mongodb+srv://evans:gK258E4Aovit6ysE@cluster0.cck8r.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",{
+mongoose.connect("mongodb+srv://evans:"+ process.env.MONGO_ATLAS_PW +"@cluster0.cck8r.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",{
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true
