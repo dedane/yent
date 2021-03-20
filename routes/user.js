@@ -144,4 +144,25 @@ router.delete('/:userId', (req, res ,next) =>{
 
 });
 
+router.patch('/signup/:Id', (req, res ,next) => {
+    const id = req.params.Id;
+    User.updateMany({ _id: id},
+    { $set: {PhoneNumber: req.body.Phonenumber }}
+    )
+    .exec()
+    .then(result => {
+        console.log(result)
+        res.status(200)
+        .json({
+            message: "Successfull Updated"
+        })
+        .catch(error => {
+            console.log(error)
+            res.status(500).json({
+                error: error
+            })
+        })
+    })
+})
+
 module.exports = router;

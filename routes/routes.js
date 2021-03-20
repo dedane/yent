@@ -2,16 +2,20 @@
 router.get("/verify/:userID/:token", (req, res, next) => {
     let userID = req.params.userID;
     let token = req.params.token;
-    db.query(
-      `SELECT * FROM users WHERE id = ${db.escape(userID)}`,
-      (err, result) => {
+
+        User.find({ _id: req.body._id })
+        .select('_id')
+        .exec()
         // user does not exists
-        if (err) {
-          throw err;
-          return res.status(400).send({
-            msg: err,
-          });
-        }
+        .then(docs => {
+            if (docs._id) {
+                throw err;
+                return res.status(400).send({
+                  msg: err,
+                });
+              }
+        })
+        
         // no result from database
         if (!result.length) {
           return res.status(409).send({
@@ -31,9 +35,11 @@ router.get("/verify/:userID/:token", (req, res, next) => {
           });
         }
         // set account active
-        db.query(
-          `UPDATE users SET active = 1 WHERE id = '${userID}'`,
-          (err, result) => {
+        router.post('/signup', (req,res,err,result) => {
+            User.find({ _id: req.body._id })
+            .exec()
+            // user does not exists
+            .then(err => {
             if (err) {
               throw err;
               return res.status(400).send({
