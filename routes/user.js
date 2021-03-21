@@ -144,25 +144,23 @@ router.delete('/:userId', (req, res ,next) =>{
 
 });
 
-router.patch('/signup/:Id', (req, res ,next) => {
-    const id = req.params.Id;
-    User.updateMany({ _id: id},
-    { $set: {PhoneNumber: req.body.Phonenumber }}
+router.patch('/signup/:userId', ( req, res ,next) => {
+    const id = req.params.userId;
+    User.updateOne({ _id: id},
+    { $set: { phonenumber: req.body.phonenumber }}
     )
     .exec()
     .then(result => {
-        console.log(result)
-        res.status(200)
-        .json({
-            message: "Successfull Updated"
-        })
-        .catch(error => {
-            console.log(error)
-            res.status(500).json({
-                error: error
-            })
-        })
+        console.log(result);
+        res.status(200).json({
+            message: "successfull Updated"});
     })
+    .catch(error => {
+        console.log(error);
+        res.status(500).send({
+            error: error
+        }); 
+    });
 })
 
 module.exports = router;
