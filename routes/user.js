@@ -5,6 +5,16 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 
+const transporter = nodemailer.createTransport({
+    host: process.env.HOST,
+    port: process.env.PORTMAIL,
+    secure: false,
+    auth: {
+        user: process.env.USERCRED,
+        pass: process.env.USERKEY,
+    }
+})
+
 const User = require('../models/user');
 
 router.post('/signup', (req, res, next) => {
@@ -15,7 +25,7 @@ router.post('/signup', (req, res, next) => {
             return res.status(409).json({
                 message: 'Mail Exists'
             });
-        } else{
+        } /* else{
             bcrypt.hash(req.body.password, 10, (err, hash) => {
                 if (err){
                     return res.status(500).json({
@@ -46,7 +56,25 @@ router.post('/signup', (req, res, next) => {
                 }
             
             });
-        }
+        } */
+        const token = jwt.sign({email, password}, process.env.JWT_KEY, {expiresIn: '20m'});
+
+        const data = {
+            from: 'info@yents.com',
+            to: email,
+            Subject: "Account Activation Link",
+            html: `
+            <h2>Please click on given link to activate account</h2>
+            <p>${process.env.CLIENT_URL}/authentication/activate/${token}</p>`
+        };
+        mg.message().send(data, function (error, body) {
+            if (error){
+                return res.json({
+                    message: err.message
+                })
+            }
+            return res.json({ message: 'Activate account in your email'});
+        });
     });
     
 });
@@ -79,6 +107,7 @@ router.get("/", (req, res, next) =>{
  });
 
 });
+
 router.post('/login', (req, res, next) => {
     User.find({ email: req.body.email})
     .exec()
@@ -123,6 +152,36 @@ router.post('/login', (req, res, next) => {
     });
 });
 
+router.put('./forgot-password', (req,res,next) => {
+    User.find({ email: req.body.email}, (err, user) => {
+        if(err || user){
+            return res.status(400).json({
+                error: "User with this email does not exist"
+            });
+        }
+
+        const token = jwt.sign({email, password}, process.env.JWT_KEY, {expiresIn: '20m'});
+
+        const data = {
+            from: 'info@yents.com',
+            to: email,
+            Subject: "Account Activation Link",
+            html: `
+            <h2>Please click on given link to activate account</h2>
+            <p>${process.env.CLIENT_URL}/authentication/activate/${token}</p>`
+        };
+        mg.message().send(data, function (error, body) {
+            if (error){
+                return res.json({
+                    message: err.message
+                })
+            }
+            return res.json({ message: 'Activate account in your email'});
+        });
+    })
+})
+
+
 router.delete('/:userId', (req, res ,next) =>{
     User.remove({
         _id: req.params.userId
@@ -143,6 +202,7 @@ router.delete('/:userId', (req, res ,next) =>{
     });
 
 });
+
 
 router.patch('/signup/:userId', ( req, res ,next) => {
     const id = req.params.userId;
