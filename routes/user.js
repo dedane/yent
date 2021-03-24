@@ -1,34 +1,23 @@
 
 const express = require('express');
 const crypto = require('crypto');
+const userController = require('../controllers/user.js');
 const router = express.Router();
-const mongoose = require('mongoose');
+
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
-require('dotenv').config();
 
-const transporter = nodemailer.createTransport({
-    host: process.env.HOST,
-    port: process.env.PORTMAIL,
-    secure: false,
-    auth: {
-        user: process.env.USERCRED,
-        pass: process.env.USERKEY,
-    }
-})
-
+const { validationResult } = require('express-validator');
 const User = require('../models/user');
 
-router.post('/signup', (req, res, next) => {
-    User.find({ email: req.body.email })
-    .exec()
-    .then( user => {
+router.post('/signup',userController.registerUser);
+     /* User.find({ email: req.body.email })
+        user => {
         if (user.length >= 1){
             return res.status(409).json({
                 message: 'Mail Exists'
             });
-        } /* else{
+        } */ /* else{
             bcrypt.hash(req.body.password, 10, (err, hash) => {
                 if (err){
                     return res.status(500).json({
@@ -60,55 +49,7 @@ router.post('/signup', (req, res, next) => {
             
             });
         } */
-        const email = req.body.email;
-        const password = req.body.password;
-
-        const hash = await bcrypt.hash(password, 12)
-
-        crypto.randomBytes(32, async (err,buffer) => {
-            try {
-                let tokenEmailVerify =bufer.toString("hex");
-                console.log('verify token', tokenEmailVerify);
-                const user = new User({
-                    _id: new mongoose.Types.ObjectId(),
-                    email: email,
-                    emailToken: tokenEmailVerify,
-                    emailVerification: false,
-                    password: hash
-                })
-                const saveUser = await user.save();
-
-                const data = {
-                    from: 'info@yents.com',
-                    to: email,
-                    Subject: "Account Activation Link",
-                    html: `
-                    <h2>Please click on given link to activate account</h2>
-                    <p>${process.env.CLIENT_URL}/authentication/activate/${token}</p>`
-                };
-                const finalSaveUser = await saveUser.save();
-                transporter.sendMail(mailOptions, function (err, data) {
-                  if (err) {
-                    console.log(err);
-                  }
-                });
-                const token = jwt.sign(
-                    {
-                      email: email,
-                      userId: saveUser._id,
-                    },
-                    process.env.SECRET,
-                    { expiresIn: "48h" }
-                  );
-                  res.status(201).json({token: token,id: saveUser._id.toString(), message:"user created!"});
-            }
-            catch (error) {
-                if(!error.statusCode) {
-                    error.statusCode = 500;
-                }
-                next(error);
-            }
-        })
+        
         
         /* mg.message().send(data, function (error, body) {
             if (error){
@@ -118,9 +59,11 @@ router.post('/signup', (req, res, next) => {
             }
             return res.json({ message: 'Activate account in your email'});
         }); */
-    });
+        
     
-});
+ 
+ 
+
 
 router.get("/", (req, res, next) =>{
  User.find()
@@ -150,6 +93,8 @@ router.get("/", (req, res, next) =>{
  });
 
 });
+
+
 
 router.post('/login', (req, res, next) => {
     User.find({ email: req.body.email})
@@ -246,6 +191,7 @@ router.delete('/:userId', (req, res ,next) =>{
 
 });
 
+router.get("verify/:token", userController.verification);
 
 router.patch('/signup/:userId', ( req, res ,next) => {
     const id = req.params.userId;

@@ -7,7 +7,7 @@ const userSchema = mongoose.Schema({
     email: {type: String, required: true, unique: true, match: /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i},
     emailToken: String,
     emailVerification: false,
-    password: {type: String, required: true},
+    password:  String,
     //active: {type: Int16Array, required: true},
     phonenumber: {type: String, required: false},
     resetLink: { data: String, default: '' },
