@@ -11,6 +11,6 @@ const userSchema = mongoose.Schema({
     phonenumber: {type: String, required: false},
     resetLink: { data: String, default: '' },
     resetPasswordExpires: Date
-}{timestamp: true};
+},{timestamp: true});
 
 module.exports = mongoose.model('User',userSchema);
