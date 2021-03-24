@@ -9,12 +9,12 @@ const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 const transporter = nodemailer.createTransport({
-    host: 'mail.yenafrica.net',
+    host: process.env.HOST,
     port: 587,
     secure: false,
     auth: {
-        user: 'info@yenafrica.net',
-        pass: 'yent$@202!',
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASSWORD,
     },
     tls: { 
         rejectUnauthorized: false 
@@ -92,7 +92,7 @@ exports.registerUser =  (req,res, next) => {
         next(error);
     } */
     const {email, password} = req.body;
-    User.findOne({email}).exec((err, user) => {
+    User.find({email: req.body.email}).exec((error, user) => {
         if(user){
             return res.status(400).json({error: 'User already exists'})
         }
