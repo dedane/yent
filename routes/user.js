@@ -1,4 +1,6 @@
+
 const express = require('express');
+const crypto = require('crypto');
 const router = express.Router();
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
@@ -57,24 +59,64 @@ router.post('/signup', (req, res, next) => {
             
             });
         } */
-        const token = jwt.sign({email, password}, process.env.JWT_KEY, {expiresIn: '20m'});
+        const email = req.body.email;
+        const password = req.body.password;
 
-        const data = {
-            from: 'info@yents.com',
-            to: email,
-            Subject: "Account Activation Link",
-            html: `
-            <h2>Please click on given link to activate account</h2>
-            <p>${process.env.CLIENT_URL}/authentication/activate/${token}</p>`
-        };
-        mg.message().send(data, function (error, body) {
+        const hash = await bcrypt.hash(password, 12)
+
+        crypto.randomBytes(32, async (err,buffer) => {
+            try {
+                let tokenEmailVerify =bufer.toString("hex");
+                console.log('verify token', tokenEmailVerify);
+                const user = new User({
+                    _id: new mongoose.Types.ObjectId(),
+                    email: email,
+                    emailToken: tokenEmailVerify,
+                    emailVerification: false,
+                    password: hash
+                })
+                const saveUser = await user.save();
+
+                const data = {
+                    from: 'info@yents.com',
+                    to: email,
+                    Subject: "Account Activation Link",
+                    html: `
+                    <h2>Please click on given link to activate account</h2>
+                    <p>${process.env.CLIENT_URL}/authentication/activate/${token}</p>`
+                };
+                const finalSaveUser = await saveUser.save();
+                transporter.sendMail(mailOptions, function (err, data) {
+                  if (err) {
+                    console.log(err);
+                  }
+                });
+                const token = jwt.sign(
+                    {
+                      email: email,
+                      userId: saveUser._id,
+                    },
+                    process.env.SECRET,
+                    { expiresIn: "48h" }
+                  );
+                  res.status(201).json({token: token,id: saveUser._id.toString(), message:"user created!"});
+            }
+            catch (error) {
+                if(!error.statusCode) {
+                    error.statusCode = 500;
+                }
+                next(error);
+            }
+        })
+        
+        /* mg.message().send(data, function (error, body) {
             if (error){
                 return res.json({
                     message: err.message
                 })
             }
             return res.json({ message: 'Activate account in your email'});
-        });
+        }); */
     });
     
 });
