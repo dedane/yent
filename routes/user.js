@@ -193,7 +193,7 @@ router.delete('/:userId', (req, res ,next) =>{
 
 router.get("verify/:token", userController.verification);
 
-router.patch('/signup/:userId', ( req, res ,next) => {
+router.patch('/phoneNumber/:userId', ( req, res ,next) => {
     const id = req.params.userId;
     User.updateOne({ _id: id},
     { $set: { phonenumber: req.body.phonenumber }}

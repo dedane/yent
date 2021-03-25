@@ -22,8 +22,9 @@ const transporter = nodemailer.createTransport({
 })
 const { validationResult } = require('express-validator');
 const User = require('../models/user');
+const { getMaxListeners } = require('../models/user');
 
-exports.registerUser =  (req,res, next) => {
+exports.registerUser =  (req, res, next) => {
     /* try {
         const errors = validationResult(req);
 
@@ -91,28 +92,37 @@ exports.registerUser =  (req,res, next) => {
         }
         next(error);
     } */
-    const {email, password} = req.body;
-    User.find({email: req.body.email}).exec((error, user) => {
-        if(user){
-            return res.status(400).json({error: 'User already exists'})
-        }
-        const token = jwt.sign({email, password}, process.env.JWT_KEY, {expiresIn: '20m'});
+    const email = req.body.email;
+    const password = req.body.password;
+    User.find({email: req.body.email})
+    .exec((err, user) => {
+       
+            if (user){
+                return res.status(409).json({
+                    error: err
+                });
+            }
+            
+        const token = jwt.sign({email, password}, process.env.JWT_KEY, {expiresIn: '20m'})   
         const mailOptions = {
             from: 'info@yenafrica.net',
             to: email,
-            Subject: "EMAIL VERIFICATION LINK",
+            subject: "EMAIL VERIFICATION LINK",
             html: `
             <h2>Please click on given link to activate account</h2>
             <p>${process.env.CLIENT_URL}/authentication/activate/${token}</p>`
         };
-        transporter.sendMail(mailOptions, (error) => {
+        
+        transporter.sendMail(mailOptions, (error, info) => {
             if(error){
-                return console.log(error)
-                
+                return console.log(error) 
             }
+            console.log('Message sent: %s', info.messageId);   
+            console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info))
+
             return res.json({message: 'Email has been sent click to verify'})
+        })
     })
-})
 }
 
 exports.verification = async (req, res, next) => {
