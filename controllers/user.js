@@ -24,8 +24,8 @@ const { validationResult } = require('express-validator');
 const User = require('../models/user');
 const { getMaxListeners } = require('../models/user');
 
-exports.registerUser =  (req, res, next) => {
-    /* try {
+exports.registerUser =  (req, res) => {
+    /* /* try {
         const errors = validationResult(req);
 
         if (!errors.isEmpty()){
@@ -92,25 +92,26 @@ exports.registerUser =  (req, res, next) => {
         }
         next(error);
     } */
-    const email = req.body.email;
+    /* */ 
+    /* const email = req.body.email;
     const password = req.body.password;
-    User.find({email: req.body.email})
+    User.findOne({email})
     .exec((err, user) => {
        
             if (user){
-                return res.status(409).json({
-                    error: err
+                return res.status(400).json({
+                    error: "There exist an email like this"
                 });
             }
             
-        const token = jwt.sign({email, password}, process.env.JWT_KEY, {expiresIn: '20m'})   
+       // const token = jwt.sign({email, password}, process.env.JWT_KEY, {expiresIn: '20m'})   
         const mailOptions = {
             from: 'info@yenafrica.net',
             to: email,
             subject: "EMAIL VERIFICATION LINK",
             html: `
             <h2>Please click on given link to activate account</h2>
-            <p>${process.env.CLIENT_URL}/authentication/activate/${token}</p>`
+            `
         };
         
         transporter.sendMail(mailOptions, (error, info) => {
@@ -122,7 +123,47 @@ exports.registerUser =  (req, res, next) => {
 
             return res.json({message: 'Email has been sent click to verify'})
         })
-    })
+    }) */
+    User.find({ email: req.body.email })
+    .exec()
+    .then( user => {
+        if (user.length >= 1){
+            return res.status(409).json({
+                message: 'Mail Exists'
+            });
+        } else{
+            bcrypt.hash(req.body.password, 10, (err, hash) => {
+                if (err){
+                    return res.status(500).json({
+                        error: err
+                    });
+                } else {
+                    const user = new User({
+                        _id: new mongoose.Types.ObjectId(),
+                        email: req.body.email,
+                        password: hash
+                        });
+                        user
+                        .save()
+                        .then( result => {
+                            res.status(200).json({
+                                _id: result._id,
+                                email: result.email,
+                                password: result.password,
+                                message: 'User Created'
+
+                            });
+                        })
+                        .catch( err => {
+                            res.status(500).json({
+                                error: err
+                            });
+                        });
+                }
+
+            });
+        }
+    });
 }
 
 exports.verification = async (req, res, next) => {
