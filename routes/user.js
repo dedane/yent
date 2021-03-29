@@ -111,7 +111,7 @@ router.post('/login', (req, res, next) => {
                     message: 'Auth Failed'
                 });
             }
-            //tOKEN CONVERSION FOR LOGIN
+            //TOKEN CONVERSION FOR LOGIN
             if(result){
                 const token = jwt.sign(
                 {

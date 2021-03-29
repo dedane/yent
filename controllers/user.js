@@ -146,14 +146,15 @@ exports.registerUser =  (req, res) => {
                         user
                         .save()
                         .then( result => {
-                            res.status(200).json({
+                            return res.status(200).json({
                                 _id: result._id,
                                 email: result.email,
                                 password: result.password,
                                 message: 'User Created'
-
+                                
                             });
                         })
+                        
                         .catch( err => {
                             res.status(500).json({
                                 error: err
