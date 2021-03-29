@@ -115,8 +115,7 @@ router.post('/login', (req, res, next) => {
             if(result){
                 const token = jwt.sign(
                 {
-                    email: user[0].email,
-                    userId: user[0]._id
+                    userId: user[0]._id,
                 }, 
                 'SECRET',
                 {
@@ -190,8 +189,14 @@ router.delete('/:userId', (req, res ,next) =>{
     });
 
 });
-
+/*
+*Veryifying customer
+* */
 router.get("verify/:token", userController.verification);
+
+/*
+*Adding Phone Number
+* */
 
 router.patch('/phoneNumber/:userId', ( req, res ,next) => {
     const id = req.params.userId;
